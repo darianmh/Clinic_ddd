@@ -39,7 +39,11 @@ public class Appointment : Entity
         {
             return Error.Validation(description: "Appointment date cannot be in the past.");
         }
-        if(appointmentDate.DayOfWeek < DayOfWeek.Saturday || appointmentDate.DayOfWeek > DayOfWeek.Wednesday)
+        if (appointmentDate.DayOfWeek != DayOfWeek.Saturday &&
+        appointmentDate.DayOfWeek != DayOfWeek.Sunday &&
+        appointmentDate.DayOfWeek != DayOfWeek.Monday &&
+        appointmentDate.DayOfWeek != DayOfWeek.Tuesday &&
+        appointmentDate.DayOfWeek != DayOfWeek.Wednesday)
         {
             return Error.Validation(description: "Appointment date must be from Saturday to Wednesday.");
         }

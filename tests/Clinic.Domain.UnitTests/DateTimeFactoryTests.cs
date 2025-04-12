@@ -19,10 +19,9 @@ public class DateFactoryTests
   )
     {
         // Arrange
-
+        var result = DateFactory.GenerateDate(addDays, dayOfWeek, hour, minute);
 
         // Act
-        var result = DateFactory.GenerateDate(addDays, dayOfWeek, hour, minute);
 
         // Assert
 
@@ -37,6 +36,10 @@ public class DateFactoryTests
         if (hour.HasValue)
         {
             result.Hour.Should().Be(hour.Value);
+        }
+        if (addDays == null || addDays >= 0)
+        {
+            result.Date.Should().BeOnOrAfter(DateTime.Now.Date);
         }
     }
 }

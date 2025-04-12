@@ -27,7 +27,7 @@ public class AppointmentTests
         result.Value.Should().BeNull();
     }
     [Theory]
-    [InlineData(null, DayOfWeek.Thursday, 8, null)]//should be next Thursday at 8
+    [InlineData(null, DayOfWeek.Tuesday, 9, null)]//should be next Thursday at 8
     [InlineData(null, DayOfWeek.Monday, 12, null)]//should be next Monday at 12
     [InlineData(null, DayOfWeek.Sunday, 18, null)]//should be next Sunday at 18
     public void Create_WhenCalledWithValidDate_ShouldReturnAppointment(int? addDays,
@@ -42,6 +42,8 @@ public class AppointmentTests
         var result = Appointment.Create(appointmentDate);
 
         //Assert
+        if (result.IsError)
+            Console.WriteLine("Generated Date: " + appointmentDate.ToString("yyyy-MM-dd HH:mm:ss") + " Error: " + result.Errors.First().Description);
         result.IsError.Should().BeFalse();
         result.Value.Should().NotBeNull();
     }

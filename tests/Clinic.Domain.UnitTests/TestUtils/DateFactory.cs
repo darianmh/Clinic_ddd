@@ -29,6 +29,10 @@ namespace Clinic.Domain.UnitTests.TestUtils
             {
                 dateTime = dateTime.AddMinutes(minute.Value);
             }
+            if ((addDays == null || addDays >= 0) && dateTime < DateTime.Now)
+            {
+                dateTime = dateTime.AddDays(7);
+            }
             return dateTime;
         }
     }
