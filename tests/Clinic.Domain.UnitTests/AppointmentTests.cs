@@ -5,48 +5,48 @@ namespace Clinic.Domain.UnitTests;
 
 public class AppointmentTests
 {
-
     [Theory]
-    [InlineData(-1, null, null, null)]//should be yesterday
-    [InlineData(null, DayOfWeek.Monday, 7, null)] //should be next Monday at 7
-    [InlineData(null, DayOfWeek.Friday, null, null)]//should be next Friday
-    [InlineData(null, DayOfWeek.Sunday, 18, 3)]//should be next Sunday at 18:03
-    public void Create_WhenCalledWithInValidDate_ShouldReturnError(int? addDays,
+    [InlineData(-1, null, null, null)] // Past date
+    [InlineData(null, DayOfWeek.Friday, 10, null)] // Invalid day (Friday)
+    [InlineData(null, DayOfWeek.Thursday, 10, null)] // Invalid day (Thursday)
+    [InlineData(null, DayOfWeek.Monday, 8, 59)] // Invalid time (8:59 AM)
+    [InlineData(null, DayOfWeek.Monday, 18, 1)] // Invalid time (6:01 PM)
+    public void Create_WhenCalledWithInvalidDate_ShouldReturnError(
+        int? addDays,
         DayOfWeek? dayOfWeek,
         int? hour,
         int? minute)
     {
-        //Arrange
+        // Arrange
         var appointmentDate = DateFactory.GenerateDate(addDays, dayOfWeek, hour, minute);
 
-        //Act
+        // Act
         var result = Appointment.Create(appointmentDate);
 
-        //Assert
+        // Assert
         result.IsError.Should().BeTrue();
         result.Value.Should().BeNull();
     }
+
     [Theory]
-    [InlineData(null, DayOfWeek.Tuesday, 9, null)]//should be next Thursday at 8
-    [InlineData(null, DayOfWeek.Monday, 12, null)]//should be next Monday at 12
-    [InlineData(null, DayOfWeek.Sunday, 18, null)]//should be next Sunday at 18
-    public void Create_WhenCalledWithValidDate_ShouldReturnAppointment(int? addDays,
+    [InlineData(null, DayOfWeek.Saturday, 9, 0)] // Valid day and time (9:00 AM on Saturday)
+    [InlineData(null, DayOfWeek.Wednesday, 18, 0)] // Valid day and time (6:00 PM on Wednesday)
+    [InlineData(null, DayOfWeek.Monday, 12, 30)] // Valid day and time (12:30 PM on Monday)
+    public void Create_WhenCalledWithValidDate_ShouldReturnAppointment(
+        int? addDays,
         DayOfWeek? dayOfWeek,
         int? hour,
         int? minute)
     {
-        //Arrange
+        // Arrange
         var appointmentDate = DateFactory.GenerateDate(addDays, dayOfWeek, hour, minute);
 
-        //Act
+        // Act
         var result = Appointment.Create(appointmentDate);
 
-        //Assert
-        if (result.IsError)
-            Console.WriteLine("Generated Date: " + appointmentDate.ToString("yyyy-MM-dd HH:mm:ss") + " Error: " + result.Errors.First().Description);
+        // Assert
         result.IsError.Should().BeFalse();
         result.Value.Should().NotBeNull();
     }
-
 }
 
