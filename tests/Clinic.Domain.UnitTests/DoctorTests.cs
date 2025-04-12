@@ -2,7 +2,6 @@
 using FluentAssertions;
 
 namespace Clinic.Domain.UnitTests;
-
 public class DoctorTests
 {
     [Fact]
