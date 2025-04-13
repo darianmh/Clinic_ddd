@@ -1,4 +1,7 @@
+using Clinic.Application.Appointments.Command.CreateAppointment;
 using Clinic.Domain.UnitTests.TestUtils;
+using Clinic.Domain.UnitTests.TestUtils.Services;
+using Clinic.Domain.UnitTests.TestUtils.TestConstants;
 using FluentAssertions;
 
 namespace Clinic.Domain.UnitTests;
@@ -21,11 +24,12 @@ public class AppointmentTests
         var appointmentDate = DateFactory.GenerateDate(addDays, dayOfWeek, hour, minute);
 
         // Act
-        var result = Appointment.Create(appointmentDate);
+        var result = AppointmentFactory.CreateAppointment(appointmentDate);
 
         // Assert
         result.IsError.Should().BeTrue();
         result.Value.Should().BeNull();
+        result.FirstError.Code.Should().Be(AppointmentError.InvalidAppointmentDate);
     }
 
     [Theory]
@@ -42,11 +46,42 @@ public class AppointmentTests
         var appointmentDate = DateFactory.GenerateDate(addDays, dayOfWeek, hour, minute);
 
         // Act
-        var result = Appointment.Create(appointmentDate);
+        var result = AppointmentFactory.CreateAppointment(appointmentDate);
 
         // Assert
         result.IsError.Should().BeFalse();
         result.Value.Should().NotBeNull();
+    }
+
+
+    [Theory]
+    [InlineData(DoctorType.General, 16)] // General doctor with 16 minutes duration
+    [InlineData(DoctorType.Specialist, 9)] // Specialist doctor with 9 minutes duration
+    [InlineData(DoctorType.General, 4)] // General doctor with 4 minutes duration
+    [InlineData(DoctorType.Specialist, 31)] // Specialist doctor with 31 minutes duration
+    public async Task AddAppointment_WhenInvalidDurationForDoctor_ShouldReturnError(
+        DoctorType doctorType,
+    int appointmentDurationMinutes)
+    {
+        // Arrange
+        var doctor = doctorType == DoctorType.General ? Constants.Doctor.GeneralDoctor : Constants.Doctor.SpecialistDoctor;
+        var doctorRepository = new DoctorRepository();
+        var appointmentRepository = new AppointmentRepository();
+        await doctorRepository.AddAsync(doctor);
+
+        var CreateAppointmentHandler = new CreateAppointmentCommandHandler(appointmentRepository, doctorRepository);
+
+        // Act
+
+        var appointmentResult = await CreateAppointmentHandler.Handle(new CreateAppointmentCommand(
+Constants.Date.ValidAppointmentDateTime,
+appointmentDurationMinutes,
+doctor.Id),
+CancellationToken.None);
+
+        // Assert
+        appointmentResult.IsError.Should().BeTrue();
+        appointmentResult.FirstError.Code.Should().Be(AppointmentError.InvalidAppointmentDuration);
     }
 }
 

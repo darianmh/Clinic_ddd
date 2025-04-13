@@ -2,8 +2,12 @@ namespace Clinic.Domain.UnitTests.TestUtils;
 
 public static class DoctorFactory
 {
-    public static Doctor CreateDoctor(Guid? id = null)
+    public static Doctor CreateDoctor(
+        DoctorType? doctorType = null,
+        Guid? id = null)
     {
-        return new Doctor(id ?? Guid.NewGuid());
+        return new Doctor(
+            doctorType ?? DoctorType.General,
+            id ?? Guid.NewGuid());
     }
 }

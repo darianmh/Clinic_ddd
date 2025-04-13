@@ -2,17 +2,18 @@ using Clinic.Domain.Common;
 using ErrorOr;
 
 namespace Clinic.Domain;
-
 public class Appointment : Entity
 {
     public Appointment(DateTime appointmentDate,
+    int appointmentDurationMinutes,
+    Guid doctorId,
     Guid? id = null) : base(id ?? Guid.NewGuid())
     {
         _appointmentDate = appointmentDate;
+        _appointmentDurationMinutes = appointmentDurationMinutes;
+        _doctorId = doctorId;
     }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Appointment"/> class with a new unique identifier.
-    /// </summary>
+
 
     public Appointment()
     {
@@ -21,23 +22,32 @@ public class Appointment : Entity
 
 
     private readonly DateTime _appointmentDate;
+    private readonly int _appointmentDurationMinutes;
+    private readonly Guid _doctorId;
 
 
 
-    public static ErrorOr<Appointment> Create(DateTime appointmentDate)
+    public static ErrorOr<Appointment> Create(DateTime appointmentDate,
+    int appointmentDurationMinutes,
+    Guid _doctorId,
+    Guid? id = null
+    )
     {
-        var ValidateAppointmentDateResult = ValidateAppointmentDate(appointmentDate);
-        if (ValidateAppointmentDateResult.IsError)
-            return ValidateAppointmentDateResult.Errors;
+        var validateAppointmentDateResult = ValidateAppointmentDate(appointmentDate);
+        if (validateAppointmentDateResult.IsError)
+            return validateAppointmentDateResult.Errors;
 
-        return new Appointment(appointmentDate);
+        return new Appointment(appointmentDate, appointmentDurationMinutes, _doctorId, id);
     }
+
+
 
     private static ErrorOr<Success> ValidateAppointmentDate(DateTime appointmentDate)
     {
         if (appointmentDate < DateTime.Now)
         {
-            return Error.Validation(description: "Appointment date cannot be in the past.");
+            return Error.Validation(description: "Appointment date cannot be in the past.",
+                code: AppointmentError.InvalidAppointmentDate);
         }
 
 
@@ -48,7 +58,8 @@ public class Appointment : Entity
      appointmentDate.DayOfWeek != DayOfWeek.Tuesday &&
      appointmentDate.DayOfWeek != DayOfWeek.Wednesday)
         {
-            return Error.Validation(description: "Appointment date must be from Saturday to Wednesday.");
+            return Error.Validation(description: "Appointment date must be from Saturday to Wednesday.",
+                code: AppointmentError.InvalidAppointmentDate);
         }
 
         // Validate that the time is between 9 AM and 6 PM
@@ -56,7 +67,9 @@ public class Appointment : Entity
         var endTime = new TimeSpan(18, 0, 0); // 6:00 PM
         if (appointmentDate.TimeOfDay < startTime || appointmentDate.TimeOfDay > endTime)
         {
-            return Error.Validation(description: "Appointment date must be within working hours (9 AM to 6 PM).");
+            return Error.Validation(
+                description: "Appointment date must be within working hours (9 AM to 6 PM).",
+                code: AppointmentError.InvalidAppointmentDate);
         }
         return Result.Success;
     }
