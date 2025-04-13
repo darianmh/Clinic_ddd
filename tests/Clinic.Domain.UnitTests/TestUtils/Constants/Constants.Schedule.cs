@@ -9,5 +9,8 @@ public static partial class Constants
         public static readonly Domain.Schedule ValidSchedule =
             Domain.Schedule.Create(DayOfWeek.Monday, TimeRange.Create(new TimeSpan(hours: 11, minutes: 0, seconds: 0),
                 new TimeSpan(hours: 15,minutes: 0, seconds: 0)));
+        public static readonly Domain.Schedule ShortSchedule =
+            Domain.Schedule.Create(DayOfWeek.Monday, TimeRange.Create(new TimeSpan(hours: 11, minutes: 0, seconds: 0),
+                new TimeSpan(hours: 12,minutes: 22, seconds: 0)));
     }
 }

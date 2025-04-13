@@ -21,7 +21,7 @@ public class TimeRange : ValueObject
 
     public static TimeRange Create(TimeSpan startTime, TimeSpan endTime)
     {
-        if (startTime >= endTime)
+        if (startTime > endTime)
         {
             throw new ValidationException("Invalid time range.");
         }

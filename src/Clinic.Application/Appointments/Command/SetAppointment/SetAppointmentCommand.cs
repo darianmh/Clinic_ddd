@@ -7,7 +7,7 @@ public record SetAppointmentCommand : IRequest<ErrorOr<Domain.Appointment>>
     public SetAppointmentCommand(
         DateTime startDateTime,
         uint durationMinutes,
-        Guid doctorId, 
+        Guid doctorId,
         Guid patientId)
     {
         StartDateTime = startDateTime;

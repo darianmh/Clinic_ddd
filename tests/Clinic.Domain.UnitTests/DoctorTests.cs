@@ -1,4 +1,5 @@
-﻿using Clinic.Domain.DoctorAggregate;
+﻿using Clinic.Domain.Common;
+using Clinic.Domain.DoctorAggregate;
 using Clinic.Domain.UnitTests.TestUtils;
 using Clinic.Domain.UnitTests.TestUtils.Services;
 using Clinic.Domain.UnitTests.TestUtils.TestConstants;
@@ -48,7 +49,7 @@ public class DoctorTests
     public void AddAppointmentForGeneralDoctor_WhenMoreThanTwoAppointmentsWithOverlap_ShouldReturnError()
     {
         //Arrange
-        var doctor = Constants.Doctor.GeneralDoctor;
+        var doctor = DoctorFactory.CreateDoctor();
         doctor.AddSchedule(Constants.Schedule.ValidSchedule);
 
         var appointment1 = AppointmentFactory.CreateAppointment(Constants.Date.ValidAppointmentDateTime,
@@ -133,7 +134,7 @@ public class DoctorTests
 
         // Assert
         addAppointmentResult.IsError.Should().BeTrue();
-        addAppointmentResult.FirstError.Code.Should().Be(AppointmentErrors.InvalidAppointmentDuration);
+        addAppointmentResult.FirstError.Code.Should().Be(AppointmentErrors.InvalidDurationMinutes);
     }
 
     [Theory]
@@ -146,7 +147,7 @@ public class DoctorTests
         int? minute)
     {
         //Arrange
-        var doctor = Constants.Doctor.GeneralDoctor;
+        var doctor = DoctorFactory.CreateDoctor();
         var unitOfWork = new UnitOfWork();
         await unitOfWork.DoctorRepository.AddAsync(doctor);
         var schedule = Constants.Schedule.ValidSchedule;
@@ -167,6 +168,86 @@ public class DoctorTests
         addAppointmentResult.IsError.Should().BeTrue();
         addAppointmentResult.FirstError.Code.Should().Be(DoctorErrors.InvalidSchedule);
 
+    }
+
+    [Fact]
+    public void FindEarliestAvailableAppointment_WhenNoAppointments_ShouldReturnNull()
+    {
+        // Arrange
+        var doctor = DoctorFactory.CreateDoctor();
+        var schedule = Constants.Schedule.ShortSchedule;
+
+        doctor.AddSchedule(schedule);
+
+        var appointmentDate = Constants.Date.ValidAppointmentDateTime;
+        var now = DateTime.Now;
+
+        var appointmentResult1 = AppointmentFactory.CreateAppointment(appointmentDate,
+            Constants.Appointment.ValidAppointmentDuration,
+            doctor.Id);
+        var appointmentResult2 = AppointmentFactory.CreateAppointment(
+            appointmentDate
+                .AddMinutes(Constants.Appointment.ValidAppointmentDuration),
+            Constants.Appointment.ValidAppointmentDuration,
+            doctor.Id);
+
+        var addAppointmentResult1 = doctor.AddAppointment(appointmentResult1.Value);
+        var addAppointmentResult2 = doctor.AddAppointment(appointmentResult2.Value);
+
+        //Act
+        var earliestAvailableAppointment = doctor.FindEarliestAvailableAppointment(
+            10,
+            Constants.Date.ValidAppointmentDateTime);
+
+        // Assert
+        addAppointmentResult1.IsError.Should().BeFalse();
+        addAppointmentResult2.IsError.Should().BeFalse();
+        earliestAvailableAppointment.Should().NotBeNull();
+        earliestAvailableAppointment.Should().BeAfter(now.AddDays(6));
+        earliestAvailableAppointment.Should().BeBefore(now.AddDays(12));
+        earliestAvailableAppointment.Value.DayOfWeek.Should().Be(schedule.DayOfWeek);
+        earliestAvailableAppointment.Value.TimeOfDay.Should().BeGreaterThanOrEqualTo(schedule.TimeRange.StartTime);
+        earliestAvailableAppointment.Value.TimeOfDay.Should().BeLessThanOrEqualTo(schedule.TimeRange.EndTime);
+
+    }
+
+    [Fact]
+    public void AddSchedule_WhenAddingDuplicatedSchedule_ShouldReturnError()
+    {
+        // Arrange
+        var doctor = DoctorFactory.CreateDoctor();
+        var schedule = Constants.Schedule.ValidSchedule;
+
+        //Act
+        var addScheduleResult1 = doctor.AddSchedule(schedule);
+        var addScheduleResult2 = doctor.AddSchedule(schedule);
+
+        // Assert
+        addScheduleResult1.IsError.Should().BeFalse();
+        addScheduleResult2.IsError.Should().BeTrue();
+        addScheduleResult2.FirstError.Code.Should().Be(DoctorErrors.DuplicatedSchedule);
+    }
+
+    [Theory]
+    [InlineData(DayOfWeek.Friday, "08:00", "09:00")] // Invalid day and time (8:00 AM on Friday)
+    [InlineData(DayOfWeek.Thursday, "18:00", "19:00")] // Invalid day and time (6:00 PM on Thursday)
+    [InlineData(DayOfWeek.Monday, "08:59", "11:00")] // Invalid day and time (10:00 AM on Monday)
+    public void AddSchedule_WhenAddingOutOfWorkingHours_ShouldReturnError(
+        DayOfWeek dayOfWeek,
+        string startTime,
+        string endTime)
+    {
+        // Arrange
+        var doctor = DoctorFactory.CreateDoctor();
+        var schedule = ScheduleFactory.CreateSchedule(dayOfWeek,
+            TimeRange.Create(TimeSpan.Parse(startTime), TimeSpan.Parse(endTime)));
+
+        //Act
+        var addScheduleResult = doctor.AddSchedule(schedule);
+
+        // Assert
+        addScheduleResult.IsError.Should().BeTrue();
+        addScheduleResult.FirstError.Code.Should().Be(WorkDateErrors.InvalidWorkingHour);
     }
 }
 

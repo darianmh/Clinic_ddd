@@ -9,5 +9,6 @@ namespace Clinic.Domain.DoctorAggregate
     public static class DoctorErrors
     {
         public const string InvalidSchedule = "Doctor.InvalidSchedule";
+        public const string DuplicatedSchedule = "Doctor.DuplicatedSchedule";
     }
 }

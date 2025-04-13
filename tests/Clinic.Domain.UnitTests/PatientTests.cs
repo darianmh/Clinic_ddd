@@ -12,7 +12,7 @@ public class PatientTests
     {
         //Arrange
         var patient = PatientFactory.CreatePatient();
-        var appointmentDate = DateTime.Now.AddDays(1);
+        var appointmentDate = Constants.Date.ValidAppointmentDateTime;
         var appointmentDuration = Constants.Appointment.ValidAppointmentDuration;
 
         var appointment1 = AppointmentFactory.CreateAppointment(
@@ -37,7 +37,7 @@ public class PatientTests
     {
         //Arrange
         var patient = PatientFactory.CreatePatient();
-        var appointmentDate = DateTime.Now.AddDays(1);
+        var appointmentDate = Constants.Date.ValidAppointmentDateTime;
         var appointmentDuration = Constants.Appointment.ValidAppointmentDuration;
 
         var appointment1 = AppointmentFactory.CreateAppointment(

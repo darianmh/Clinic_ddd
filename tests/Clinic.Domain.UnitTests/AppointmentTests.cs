@@ -1,8 +1,4 @@
-using Clinic.Application.Appointments.Command.CreateAppointment;
-using Clinic.Domain.DoctorAggregate;
 using Clinic.Domain.UnitTests.TestUtils;
-using Clinic.Domain.UnitTests.TestUtils.Services;
-using Clinic.Domain.UnitTests.TestUtils.TestConstants;
 using FluentAssertions;
 
 namespace Clinic.Domain.UnitTests;
@@ -30,7 +26,7 @@ public class AppointmentTests
         // Assert
         result.IsError.Should().BeTrue();
         result.Value.Should().BeNull();
-        result.FirstError.Code.Should().Be(AppointmentErrors.InvalidDurationMinutes);
+        result.FirstError.Code.Should().Be(WorkDateErrors.InvalidWorkingHour);
     }
 
     [Theory]
