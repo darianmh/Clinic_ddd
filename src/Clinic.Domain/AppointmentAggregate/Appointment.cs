@@ -2,15 +2,15 @@ using Clinic.Domain.Common;
 using ErrorOr;
 
 namespace Clinic.Domain;
-public class Appointment : Entity
+public class Appointment : AggregateRoot
 {
     public Appointment(DateTime appointmentDate,
     int appointmentDurationMinutes,
     Guid doctorId,
     Guid? id = null) : base(id ?? Guid.NewGuid())
     {
-        _appointmentDate = appointmentDate;
-        _appointmentDurationMinutes = appointmentDurationMinutes;
+        AppointmentDate = appointmentDate;
+        AppointmentDurationMinutes = appointmentDurationMinutes;
         _doctorId = doctorId;
     }
 
@@ -21,8 +21,8 @@ public class Appointment : Entity
     }
 
 
-    private readonly DateTime _appointmentDate;
-    private readonly int _appointmentDurationMinutes;
+    public DateTime AppointmentDate { get; }
+    public int AppointmentDurationMinutes { get; }
     private readonly Guid _doctorId;
 
 
@@ -47,7 +47,7 @@ public class Appointment : Entity
         if (appointmentDate < DateTime.Now)
         {
             return Error.Validation(description: "Appointment date cannot be in the past.",
-                code: AppointmentError.InvalidAppointmentDate);
+                code: AppointmentErrors.InvalidAppointmentDate);
         }
 
 
@@ -59,7 +59,7 @@ public class Appointment : Entity
      appointmentDate.DayOfWeek != DayOfWeek.Wednesday)
         {
             return Error.Validation(description: "Appointment date must be from Saturday to Wednesday.",
-                code: AppointmentError.InvalidAppointmentDate);
+                code: AppointmentErrors.InvalidAppointmentDate);
         }
 
         // Validate that the time is between 9 AM and 6 PM
@@ -69,7 +69,7 @@ public class Appointment : Entity
         {
             return Error.Validation(
                 description: "Appointment date must be within working hours (9 AM to 6 PM).",
-                code: AppointmentError.InvalidAppointmentDate);
+                code: AppointmentErrors.InvalidAppointmentDate);
         }
         return Result.Success;
     }

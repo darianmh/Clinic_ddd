@@ -1,4 +1,5 @@
 using Clinic.Application.Appointments.Command.CreateAppointment;
+using Clinic.Domain.DoctorAggregate;
 using Clinic.Domain.UnitTests.TestUtils;
 using Clinic.Domain.UnitTests.TestUtils.Services;
 using Clinic.Domain.UnitTests.TestUtils.TestConstants;
@@ -29,7 +30,7 @@ public class AppointmentTests
         // Assert
         result.IsError.Should().BeTrue();
         result.Value.Should().BeNull();
-        result.FirstError.Code.Should().Be(AppointmentError.InvalidAppointmentDate);
+        result.FirstError.Code.Should().Be(AppointmentErrors.InvalidAppointmentDate);
     }
 
     [Theory]
@@ -65,23 +66,55 @@ public class AppointmentTests
     {
         // Arrange
         var doctor = doctorType == DoctorType.General ? Constants.Doctor.GeneralDoctor : Constants.Doctor.SpecialistDoctor;
-        var doctorRepository = new DoctorRepository();
-        var appointmentRepository = new AppointmentRepository();
-        await doctorRepository.AddAsync(doctor);
+        var unitOfWork = new UnitOfWork();
+        await unitOfWork.DoctorRepository.AddAsync(doctor);
 
-        var CreateAppointmentHandler = new CreateAppointmentCommandHandler(appointmentRepository, doctorRepository);
+        var createAppointmentHandler = new CreateAppointmentCommandHandler(unitOfWork);
+        var createAppointmentCommand = new CreateAppointmentCommand(
+            Constants.Date.ValidAppointmentDateTime,
+            appointmentDurationMinutes,
+            doctor.Id);
 
         // Act
-
-        var appointmentResult = await CreateAppointmentHandler.Handle(new CreateAppointmentCommand(
-Constants.Date.ValidAppointmentDateTime,
-appointmentDurationMinutes,
-doctor.Id),
-CancellationToken.None);
+        var appointmentResult = await createAppointmentHandler.Handle(createAppointmentCommand,
+            CancellationToken.None);
 
         // Assert
         appointmentResult.IsError.Should().BeTrue();
-        appointmentResult.FirstError.Code.Should().Be(AppointmentError.InvalidAppointmentDuration);
+        appointmentResult.FirstError.Code.Should().Be(AppointmentErrors.InvalidAppointmentDuration);
+    }
+
+    [Theory]
+    [InlineData(DayOfWeek.Saturday, 12, 0)] // Invalid day and time (12:00 PM on Saturday)
+    [InlineData(DayOfWeek.Tuesday, 18, 0)] // Invalid day and time (6:00 PM on Tuesday)
+    [InlineData(DayOfWeek.Monday, 10, 59)] // Invalid day and time (10:59 PM on Monday)
+    [InlineData(DayOfWeek.Monday, 15, 1)] // Invalid day and time (15:01 PM on Monday)
+    public async Task AppAppointment_WhenAddingOutOfScheduleForDoctor_ShouldReturnError(DayOfWeek? dayOfWeek,
+        int? hour,
+        int? minute)
+    {
+        //Arrange
+        var doctor = Constants.Doctor.GeneralDoctor;
+        var unitOfWork = new UnitOfWork();
+        await unitOfWork.DoctorRepository.AddAsync(doctor);
+        var schedule = Constants.Schedule.ValidSchedule;
+        doctor.AddSchedule(schedule);
+
+        var createAppointmentHandler = new CreateAppointmentCommandHandler(unitOfWork);
+        var createAppointmentCommand = new CreateAppointmentCommand(
+            DateFactory.GenerateDate(null, dayOfWeek, hour, minute),
+            Constants.Appointment.ValidAppointmentDuration,
+            doctor.Id);
+
+        //Act
+        var appointmentResult = await createAppointmentHandler.Handle(createAppointmentCommand,
+            CancellationToken.None);
+
+
+        // Assert
+        appointmentResult.IsError.Should().BeTrue();
+        appointmentResult.FirstError.Code.Should().Be(DoctorErrors.InvalidSchedule);
+
     }
 }
 

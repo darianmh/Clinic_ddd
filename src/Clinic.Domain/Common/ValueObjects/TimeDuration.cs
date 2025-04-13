@@ -1,9 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
-using ErrorOr;
 
 namespace Clinic.Domain.Common;
-
 public class TimeDuration : ValueObject
 {
     private TimeDuration(int minTime, int maxTime)

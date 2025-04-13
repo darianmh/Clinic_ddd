@@ -1,4 +1,5 @@
 ﻿using Clinic.Domain.UnitTests.TestUtils;
+using Clinic.Domain.UnitTests.TestUtils.TestConstants;
 using FluentAssertions;
 
 namespace Clinic.Domain.UnitTests;
@@ -9,12 +10,13 @@ public class DoctorTests
     {
         //Arrange
         var doctor = DoctorFactory.CreateDoctor();
+        doctor.AddSchedule(Constants.Schedule.ValidSchedule);
         var appointment1 = AppointmentFactory.CreateAppointment();
         var appointment2 = AppointmentFactory.CreateAppointment();
 
         //Act
-        var addAppointmentResult1 = doctor.AddAppointment(appointment1.Value.Id);
-        var addAppointmentResult2 = doctor.AddAppointment(appointment2.Value.Id);
+        var addAppointmentResult1 = doctor.AddAppointment(appointment1.Value);
+        var addAppointmentResult2 = doctor.AddAppointment(appointment2.Value);
 
         //Assert
         addAppointmentResult1.IsError.Should().BeFalse();
