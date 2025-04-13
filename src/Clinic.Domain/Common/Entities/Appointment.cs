@@ -4,32 +4,36 @@ using ErrorOr;
 namespace Clinic.Domain;
 public class Appointment : AggregateRoot
 {
-    public Appointment(DateTime appointmentDate,
-    int appointmentDurationMinutes,
-    Guid doctorId,
-    Guid? id = null) : base(id ?? Guid.NewGuid())
+    public Appointment(DateTime appointmentStartDate,
+        DateTime appointmentEndDate,
+        Guid doctorId,
+        Guid patientId,
+        Guid? id = null) : base(id ?? Guid.NewGuid())
     {
-        AppointmentDate = appointmentDate;
-        AppointmentDurationMinutes = appointmentDurationMinutes;
+        AppointmentStartDate = appointmentStartDate;
+        AppointmentEndDate = appointmentEndDate;
         _doctorId = doctorId;
+        _patientId = patientId;
     }
 
 
-    public Appointment()
+    public Appointment(Guid patientId)
     {
-
+        _patientId = patientId;
     }
 
 
-    public DateTime AppointmentDate { get; }
-    public int AppointmentDurationMinutes { get; }
-    private readonly Guid _doctorId;
+    public DateTime AppointmentStartDate { get; }
+    public DateTime AppointmentEndDate { get; }
+    private readonly Guid? _doctorId;
+    private readonly Guid? _patientId;
 
 
 
     public static ErrorOr<Appointment> Create(DateTime appointmentDate,
-    int appointmentDurationMinutes,
-    Guid _doctorId,
+    uint appointmentDurationMinutes,
+    Guid doctorId,
+    Guid patientId,
     Guid? id = null
     )
     {
@@ -37,10 +41,21 @@ public class Appointment : AggregateRoot
         if (validateAppointmentDateResult.IsError)
             return validateAppointmentDateResult.Errors;
 
-        return new Appointment(appointmentDate, appointmentDurationMinutes, _doctorId, id);
+        var appointmentEndDate = appointmentDate.AddMinutes(appointmentDurationMinutes);
+        return new Appointment(appointmentDate, appointmentEndDate, doctorId, patientId, id);
     }
 
 
+    public bool OverlapsDateTime(Appointment other)
+    {
+        return (AppointmentStartDate.Date == other.AppointmentStartDate.Date
+                && AppointmentStartDate <= other.AppointmentStartDate
+                && AppointmentEndDate > other.AppointmentStartDate)
+               ||
+               (AppointmentEndDate.Date == other.AppointmentEndDate.Date
+                && AppointmentStartDate < other.AppointmentEndDate
+                && AppointmentEndDate >= other.AppointmentEndDate);
+    }
 
     private static ErrorOr<Success> ValidateAppointmentDate(DateTime appointmentDate)
     {

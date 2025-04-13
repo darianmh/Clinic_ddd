@@ -19,13 +19,16 @@ public class Doctor : Entity
     }
 
     private readonly DoctorType _doctorType;
-    private readonly List<Guid> _appointments = new List<Guid>();
+    private readonly List<Appointment> _appointments = new List<Appointment>();
     private readonly List<Schedule> _weaklySchedules = new List<Schedule>();
+
+    private List<Guid> AppointmentIds =>
+        _appointments.Select(x => x.Id).ToList();
 
 
     public ErrorOr<Success> AddAppointment(Appointment appointment)
     {
-        if (_appointments.Contains(appointment.Id))
+        if (AppointmentIds.Contains(appointment.Id))
         {
             return Error.Validation(
                 description: "The appointment already exists."
@@ -33,17 +36,36 @@ public class Doctor : Entity
         }
 
         //validate appointment duration
-        var validateAppointmentDuration = ValidateAppointmentDuration(appointment.AppointmentDurationMinutes);
+        var validateAppointmentDuration = ValidateAppointmentDuration((appointment.AppointmentEndDate - appointment.AppointmentStartDate).Minutes);
         if (validateAppointmentDuration.IsError)
             return validateAppointmentDuration.Errors;
 
         //validate schedule
-        var isValidSchedule = IsValidSchedule(appointment.AppointmentDate);
+        var isValidSchedule = IsValidSchedule(appointment.AppointmentStartDate);
         if (isValidSchedule.IsError)
             return isValidSchedule.Errors;
 
 
-        _appointments.Add(appointment.Id);
+        var overlappingResult = CheckMaximumOverlappingAppointments(appointment);
+        if (overlappingResult.IsError)
+            return overlappingResult.Errors;
+
+        _appointments.Add(appointment);
+        return Result.Success;
+    }
+
+    private ErrorOr<Success> CheckMaximumOverlappingAppointments(Appointment appointment)
+    {
+        var maxOverlappingAppointments = GetMaximumAllowedOverlappingAppointments();
+        var overlappingAppointments = _appointments
+            .Where(x => x.OverlapsDateTime(appointment));
+
+        if (overlappingAppointments.Count() >= maxOverlappingAppointments)
+        {
+            return Error.Validation(
+                description: $"The maximum number of overlapping appointments is {maxOverlappingAppointments}.",
+                code: AppointmentErrors.AppointmentMaxOverlapExceeded);
+        }
         return Result.Success;
     }
 
@@ -73,14 +95,27 @@ public class Doctor : Entity
         }
     }
 
+    private uint GetMaximumAllowedOverlappingAppointments()
+    {
+        switch (_doctorType)
+        {
+            case DoctorType.General:
+                return 2;
+            case DoctorType.Specialist:
+                return 3;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(_doctorType), _doctorType, null);
+        }
+    }
+
     public ErrorOr<Success> IsValidSchedule(DateTime appointmentDateTime)
     {
         var dayOfWeek = appointmentDateTime.DayOfWeek;
         var schedule = _weaklySchedules.FirstOrDefault(x => x.DayOfWeek == dayOfWeek);
-        if (schedule==null || 
-            schedule.TimeRange.StartTime > appointmentDateTime.TimeOfDay || 
+        if (schedule == null ||
+            schedule.TimeRange.StartTime > appointmentDateTime.TimeOfDay ||
             schedule.TimeRange.EndTime < appointmentDateTime.TimeOfDay)
-        { 
+        {
             return Error.Validation(
                 description: $"The schedule for {dayOfWeek} already exists.",
                 code: DoctorErrors.InvalidSchedule);

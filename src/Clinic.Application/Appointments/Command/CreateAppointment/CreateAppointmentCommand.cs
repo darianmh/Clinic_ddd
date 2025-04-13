@@ -6,15 +6,18 @@ public record CreateAppointmentCommand : IRequest<ErrorOr<Domain.Appointment>>
 {
     public CreateAppointmentCommand(
         DateTime appointmentDate,
-        int appointmentDurationMinutes,
-        Guid doctorId)
+        uint appointmentDurationMinutes,
+        Guid doctorId, 
+        Guid patientId)
     {
         AppointmentDate = appointmentDate;
         AppointmentDurationMinutes = appointmentDurationMinutes;
         DoctorId = doctorId;
+        PatientId = patientId;
     }
 
     public DateTime AppointmentDate { get; }
-    public int AppointmentDurationMinutes { get; }
+    public uint AppointmentDurationMinutes { get; }
     public Guid DoctorId { get; }
+    public Guid PatientId { get; }
 }

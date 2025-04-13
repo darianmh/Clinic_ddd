@@ -10,6 +10,7 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
 
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IDoctorRepository _doctorRepository;
+    private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public async Task<ErrorOr<Appointment>> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
@@ -19,9 +20,17 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
             return Error.NotFound(
                 description: "Doctor not found.");
 
+        var patient = await _patientRepository.GetByIdAsync(request.PatientId, cancellationToken);
+        if (patient == null)
+            return Error.NotFound(
+                description: "Patient not found.");
 
 
-        var result = Appointment.Create(request.AppointmentDate, request.AppointmentDurationMinutes, doctor.Id);
+        var result = Appointment.Create(request.AppointmentDate,
+            request.AppointmentDurationMinutes,
+            doctor.Id,
+            patient.Id
+        );
         if (result.IsError)
             return result.Errors;
 
@@ -44,6 +53,7 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
     {
         _appointmentRepository = unitOfWork.AppointmentRepository;
         _doctorRepository = unitOfWork.DoctorRepository;
+        _patientRepository = unitOfWork.PatientRepository;
         _unitOfWork = unitOfWork;
     }
 }
