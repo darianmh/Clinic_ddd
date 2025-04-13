@@ -33,8 +33,8 @@ public class DoctorTests
         var specialistDoctor = DoctorFactory.CreateDoctor(DoctorType.Specialist);
 
         //Act
-        var generalDoctorAppointmentDuration = generalDoctor.GetValidAppointmentDuration();
-        var specialistDoctorAppointmentDuration = specialistDoctor.GetValidAppointmentDuration();
+        var generalDoctorAppointmentDuration = generalDoctor.GetValidDurationMinutes();
+        var specialistDoctorAppointmentDuration = specialistDoctor.GetValidDurationMinutes();
 
         //Assert
         generalDoctorAppointmentDuration.MaxTime.Should().BeLessThanOrEqualTo(15);

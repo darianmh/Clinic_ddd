@@ -36,12 +36,12 @@ public class Doctor : Entity
         }
 
         //validate appointment duration
-        var validateAppointmentDuration = ValidateAppointmentDuration((appointment.AppointmentEndDate - appointment.AppointmentStartDate).Minutes);
-        if (validateAppointmentDuration.IsError)
-            return validateAppointmentDuration.Errors;
+        var validateDurationMinutes = ValidateDurationMinutes((appointment.EndDateTime - appointment.StartDateTime).Minutes);
+        if (validateDurationMinutes.IsError)
+            return validateDurationMinutes.Errors;
 
         //validate schedule
-        var isValidSchedule = IsValidSchedule(appointment.AppointmentStartDate);
+        var isValidSchedule = IsValidSchedule(appointment.StartDateTime);
         if (isValidSchedule.IsError)
             return isValidSchedule.Errors;
 
@@ -69,20 +69,20 @@ public class Doctor : Entity
         return Result.Success;
     }
 
-    private ErrorOr<Success> ValidateAppointmentDuration(int appointmentDurationMinutes)
+    private ErrorOr<Success> ValidateDurationMinutes(int DurationMinutesMinutes)
     {
-        var validAppointmentDuration = GetValidAppointmentDuration();
-        if (appointmentDurationMinutes < validAppointmentDuration.MinTime ||
-            appointmentDurationMinutes > validAppointmentDuration.MaxTime)
+        var validDurationMinutes = GetValidDurationMinutes();
+        if (DurationMinutesMinutes < validDurationMinutes.MinTime ||
+            DurationMinutesMinutes > validDurationMinutes.MaxTime)
         {
             return Error.Validation(
-                description: $"Appointment duration must be between {validAppointmentDuration.MinTime} and {validAppointmentDuration.MaxTime} minutes.",
-                code: AppointmentErrors.InvalidAppointmentDuration);
+                description: $"Appointment duration must be between {validDurationMinutes.MinTime} and {validDurationMinutes.MaxTime} minutes.",
+                code: AppointmentErrors.InvalidDurationMinutes);
         }
         return Result.Success;
     }
 
-    public TimeDuration GetValidAppointmentDuration()
+    public TimeDuration GetValidDurationMinutes()
     {
         switch (_doctorType)
         {

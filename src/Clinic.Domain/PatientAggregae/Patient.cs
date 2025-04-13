@@ -8,7 +8,7 @@ public class Patient : Entity
     private const int MaxDailyAppointments = 2;
     private readonly List<Appointment> _appointments = new();
     private Dictionary<DateOnly, List<Appointment>> AppointmentsByDate =>
-        _appointments.GroupBy(a => a.AppointmentStartDate.Date)
+        _appointments.GroupBy(a => a.StartDateTime.Date)
             .ToDictionary(g => new DateOnly(g.Key.Year, g.Key.Month, g.Key.Day), g => g.ToList());
 
     private Patient(Guid? id = null) : base(id ?? Guid.NewGuid())
@@ -25,8 +25,8 @@ public class Patient : Entity
     public ErrorOr<Success> AddAppointment(Appointment appointment)
     {
 
-        var appointmentDateOnly = new DateOnly(appointment.AppointmentStartDate.Year,
-            appointment.AppointmentStartDate.Month, appointment.AppointmentStartDate.Day);
+        var appointmentDateOnly = new DateOnly(appointment.StartDateTime.Year,
+            appointment.StartDateTime.Month, appointment.StartDateTime.Day);
 
         AppointmentsByDate.TryGetValue(appointmentDateOnly, out var appointmentsByDate);
         appointmentsByDate ??= new List<Appointment>();

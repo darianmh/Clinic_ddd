@@ -3,9 +3,9 @@ using Clinic.Domain;
 using ErrorOr;
 using MediatR;
 
-namespace Clinic.Application.Appointments.Command.CreateAppointment;
+namespace Clinic.Application.Appointments.Command.SetAppointment;
 
-public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointmentCommand, ErrorOr<Appointment>>
+public class SetAppointmentCommandHandler : IRequestHandler<SetAppointmentCommand, ErrorOr<Appointment>>
 {
 
     private readonly IAppointmentRepository _appointmentRepository;
@@ -13,7 +13,7 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
     private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public async Task<ErrorOr<Appointment>> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
+    public async Task<ErrorOr<Appointment>> Handle(SetAppointmentCommand request, CancellationToken cancellationToken)
     {
         var doctor = await _doctorRepository.GetByIdAsync(request.DoctorId, cancellationToken);
         if (doctor == null)
@@ -26,8 +26,8 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
                 description: "Patient not found.");
 
 
-        var result = Appointment.Create(request.AppointmentDate,
-            request.AppointmentDurationMinutes,
+        var result = Appointment.Create(request.StartDateTime,
+            request.DurationMinutes,
             doctor.Id,
             patient.Id
         );
@@ -49,7 +49,7 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
 
 
 
-    public CreateAppointmentCommandHandler(IUnitOfWork unitOfWork)
+    public SetAppointmentCommandHandler(IUnitOfWork unitOfWork)
     {
         _appointmentRepository = unitOfWork.AppointmentRepository;
         _doctorRepository = unitOfWork.DoctorRepository;
