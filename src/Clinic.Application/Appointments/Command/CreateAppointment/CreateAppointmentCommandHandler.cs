@@ -26,8 +26,8 @@ public class CreateAppointmentCommandHandler : IRequestHandler<CreateAppointment
                 description: "Patient not found.");
 
 
-        var result = Appointment.Create(request.AppointmentDate,
-            request.AppointmentDurationMinutes,
+        var result = Appointment.Create(request.StartDateTime,
+            request.DurationMinutes,
             doctor.Id,
             patient.Id
         );

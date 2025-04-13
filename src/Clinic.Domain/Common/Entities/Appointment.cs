@@ -4,14 +4,14 @@ using ErrorOr;
 namespace Clinic.Domain;
 public class Appointment : AggregateRoot
 {
-    public Appointment(DateTime appointmentStartDate,
-        DateTime appointmentEndDate,
+    public Appointment(DateTime startDateTime,
+        DateTime endDateTime,
         Guid doctorId,
         Guid patientId,
         Guid? id = null) : base(id ?? Guid.NewGuid())
     {
-        AppointmentStartDate = appointmentStartDate;
-        AppointmentEndDate = appointmentEndDate;
+        StartDateTime = startDateTime;
+        EndDateTime = endDateTime;
         _doctorId = doctorId;
         _patientId = patientId;
     }
@@ -23,38 +23,38 @@ public class Appointment : AggregateRoot
     }
 
 
-    public DateTime AppointmentStartDate { get; }
-    public DateTime AppointmentEndDate { get; }
+    public DateTime StartDateTime { get; }
+    public DateTime EndDateTime { get; }
     private readonly Guid? _doctorId;
     private readonly Guid? _patientId;
 
 
 
-    public static ErrorOr<Appointment> Create(DateTime appointmentDate,
+    public static ErrorOr<Appointment> Create(DateTime startDateTime,
     uint appointmentDurationMinutes,
     Guid doctorId,
     Guid patientId,
     Guid? id = null
     )
     {
-        var validateAppointmentDateResult = ValidateAppointmentDate(appointmentDate);
+        var validateAppointmentDateResult = ValidateAppointmentDate(startDateTime);
         if (validateAppointmentDateResult.IsError)
             return validateAppointmentDateResult.Errors;
 
-        var appointmentEndDate = appointmentDate.AddMinutes(appointmentDurationMinutes);
-        return new Appointment(appointmentDate, appointmentEndDate, doctorId, patientId, id);
+        var appointmentEndDate = startDateTime.AddMinutes(appointmentDurationMinutes);
+        return new Appointment(startDateTime, appointmentEndDate, doctorId, patientId, id);
     }
 
 
     public bool OverlapsDateTime(Appointment other)
     {
-        return (AppointmentStartDate.Date == other.AppointmentStartDate.Date
-                && AppointmentStartDate <= other.AppointmentStartDate
-                && AppointmentEndDate > other.AppointmentStartDate)
+        return (StartDateTime.Date == other.StartDateTime.Date
+                && StartDateTime <= other.StartDateTime
+                && EndDateTime > other.StartDateTime)
                ||
-               (AppointmentEndDate.Date == other.AppointmentEndDate.Date
-                && AppointmentStartDate < other.AppointmentEndDate
-                && AppointmentEndDate >= other.AppointmentEndDate);
+               (EndDateTime.Date == other.EndDateTime.Date
+                && StartDateTime < other.EndDateTime
+                && EndDateTime >= other.EndDateTime);
     }
 
     private static ErrorOr<Success> ValidateAppointmentDate(DateTime appointmentDate)
@@ -62,7 +62,7 @@ public class Appointment : AggregateRoot
         if (appointmentDate < DateTime.Now)
         {
             return Error.Validation(description: "Appointment date cannot be in the past.",
-                code: AppointmentErrors.InvalidAppointmentDate);
+                code: AppointmentErrors.InvalidDurationMinutes);
         }
 
 
@@ -74,7 +74,7 @@ public class Appointment : AggregateRoot
      appointmentDate.DayOfWeek != DayOfWeek.Wednesday)
         {
             return Error.Validation(description: "Appointment date must be from Saturday to Wednesday.",
-                code: AppointmentErrors.InvalidAppointmentDate);
+                code: AppointmentErrors.InvalidDurationMinutes);
         }
 
         // Validate that the time is between 9 AM and 6 PM
@@ -84,7 +84,7 @@ public class Appointment : AggregateRoot
         {
             return Error.Validation(
                 description: "Appointment date must be within working hours (9 AM to 6 PM).",
-                code: AppointmentErrors.InvalidAppointmentDate);
+                code: AppointmentErrors.InvalidDurationMinutes);
         }
         return Result.Success;
     }

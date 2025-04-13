@@ -30,7 +30,7 @@ public class AppointmentTests
         // Assert
         result.IsError.Should().BeTrue();
         result.Value.Should().BeNull();
-        result.FirstError.Code.Should().Be(AppointmentErrors.InvalidAppointmentDate);
+        result.FirstError.Code.Should().Be(AppointmentErrors.InvalidDurationMinutes);
     }
 
     [Theory]

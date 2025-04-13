@@ -5,19 +5,19 @@ namespace Clinic.Application.Appointments.Command.CreateAppointment;
 public record CreateAppointmentCommand : IRequest<ErrorOr<Domain.Appointment>>
 {
     public CreateAppointmentCommand(
-        DateTime appointmentDate,
-        uint appointmentDurationMinutes,
+        DateTime startDateTime,
+        uint durationMinutes,
         Guid doctorId, 
         Guid patientId)
     {
-        AppointmentDate = appointmentDate;
-        AppointmentDurationMinutes = appointmentDurationMinutes;
+        StartDateTime = startDateTime;
+        DurationMinutes = durationMinutes;
         DoctorId = doctorId;
         PatientId = patientId;
     }
 
-    public DateTime AppointmentDate { get; }
-    public uint AppointmentDurationMinutes { get; }
+    public DateTime StartDateTime { get; }
+    public uint DurationMinutes { get; }
     public Guid DoctorId { get; }
     public Guid PatientId { get; }
 }
