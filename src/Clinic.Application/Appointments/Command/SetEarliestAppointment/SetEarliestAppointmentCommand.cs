@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Clinic.Application.Models;
+using ErrorOr;
+using MediatR;
 
 namespace Clinic.Application.Appointments.Command.SetEarliestAppointment;
 
-public class SetEarliestAppointmentCommand
-{
-}
+public record SetEarliestAppointmentCommand(
+    Guid DoctorId,
+    Guid PatientId,
+    uint DurationMinutes)
+    : IRequest<ErrorOr<AppointmentModel>>
+    ;

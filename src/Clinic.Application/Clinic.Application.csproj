@@ -8,5 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Clinic.Domain\Clinic.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Doctors\Commands\CreateDoctor\" />
+  </ItemGroup>
 
 </Project>

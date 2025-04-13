@@ -196,8 +196,7 @@ public class DoctorTests
 
         //Act
         var earliestAvailableAppointment = doctor.FindEarliestAvailableAppointment(
-            10,
-            Constants.Date.ValidAppointmentDateTime);
+            10);
 
         // Assert
         addAppointmentResult1.IsError.Should().BeFalse();

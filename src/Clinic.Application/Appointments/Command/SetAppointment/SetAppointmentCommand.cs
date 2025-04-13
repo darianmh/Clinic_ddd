@@ -1,8 +1,9 @@
+using Clinic.Application.Models;
 using ErrorOr;
 using MediatR;
 
 namespace Clinic.Application.Appointments.Command.SetAppointment;
-public record SetAppointmentCommand : IRequest<ErrorOr<Domain.Appointment>>
+public record SetAppointmentCommand : IRequest<ErrorOr<AppointmentModel>>
 {
     public SetAppointmentCommand(
         DateTime startDateTime,

@@ -146,8 +146,9 @@ public class Doctor : Entity
     }
 
     // Finds the earliest available slot of the given duration
-    public DateTime? FindEarliestAvailableAppointment(int durationMinutes, DateTime startSearchFrom)
+    public DateTime? FindEarliestAvailableAppointment(uint durationMinutes)
     {
+        var startSearchFrom = DateTime.Today;
         // Check at least 4 weeks forward
         DateTime endSearchDate = startSearchFrom.AddDays(28);
 
@@ -171,7 +172,7 @@ public class Doctor : Entity
     }
 
     // Gets all available time slots for a specific day
-    private List<DateTime> GetAvailableTimeSlots(DateTime date, Schedule schedule, int durationMinutes)
+    private List<DateTime> GetAvailableTimeSlots(DateTime date, Schedule schedule, uint durationMinutes)
     {
         List<DateTime> availableSlots = new List<DateTime>();
 
