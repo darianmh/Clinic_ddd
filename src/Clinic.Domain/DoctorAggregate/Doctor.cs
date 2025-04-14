@@ -6,16 +6,19 @@ namespace Clinic.Domain;
 
 public class Doctor : Entity
 {
-    public Doctor()
+    private Doctor()
     {
 
     }
-    public Doctor(
+    private Doctor(
         DoctorType? doctorType,
         Guid? id) : base(id ?? Guid.NewGuid())
     {
         _doctorType = doctorType ?? DoctorType.General;
     }
+
+    public static Doctor Create(DoctorType? doctorType,
+        Guid? id = null) => new(doctorType, id);
 
     private readonly DoctorType _doctorType;
     private readonly List<Appointment> _appointments = new List<Appointment>();
@@ -23,8 +26,6 @@ public class Doctor : Entity
 
     private List<Guid> AppointmentIds =>
         _appointments.Select(x => x.Id).ToList();
-
-
     public ErrorOr<Success> AddAppointment(Appointment appointment)
     {
         if (AppointmentIds.Contains(appointment.Id))
@@ -52,8 +53,6 @@ public class Doctor : Entity
         _appointments.Add(appointment);
         return Result.Success;
     }
-
-
     private ErrorOr<Success> CheckMaximumOverlappingAppointments(Appointment appointment)
     {
         var maxOverlappingAppointments = GetMaximumAllowedOverlappingAppointments();
@@ -68,7 +67,6 @@ public class Doctor : Entity
         }
         return Result.Success;
     }
-
     private ErrorOr<Success> ValidateDurationMinutes(int durationMinutes)
     {
         var validDurationMinutes = GetValidDurationMinutes();
@@ -81,7 +79,6 @@ public class Doctor : Entity
         }
         return Result.Success;
     }
-
     public TimeDuration GetValidDurationMinutes()
     {
         switch (_doctorType)
@@ -94,7 +91,6 @@ public class Doctor : Entity
                 throw new ArgumentOutOfRangeException(nameof(_doctorType), _doctorType, null);
         }
     }
-
     private uint GetMaximumAllowedOverlappingAppointments()
     {
         switch (_doctorType)
@@ -107,7 +103,6 @@ public class Doctor : Entity
                 throw new ArgumentOutOfRangeException(nameof(_doctorType), _doctorType, null);
         }
     }
-
     public ErrorOr<Success> IsValidSchedule(DateTime appointmentDateTime)
     {
         var dayOfWeek = appointmentDateTime.DayOfWeek;
@@ -122,7 +117,6 @@ public class Doctor : Entity
         }
         return Result.Success;
     }
-
     public ErrorOr<Success> AddSchedule(Schedule schedule)
     {
         // Check if the schedule already exists

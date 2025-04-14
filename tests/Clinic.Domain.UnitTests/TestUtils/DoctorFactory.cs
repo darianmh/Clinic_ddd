@@ -6,8 +6,6 @@ public static class DoctorFactory
         DoctorType? doctorType = null,
         Guid? id = null)
     {
-        return new Doctor(
-            doctorType ?? DoctorType.General,
-            id ?? Guid.NewGuid());
+        return Doctor.Create(doctorType?? DoctorType.General, id ?? Guid.NewGuid());
     }
 }

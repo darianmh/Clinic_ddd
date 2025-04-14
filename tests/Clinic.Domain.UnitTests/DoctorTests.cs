@@ -1,7 +1,6 @@
 ﻿using Clinic.Domain.Common;
 using Clinic.Domain.DoctorAggregate;
 using Clinic.Domain.UnitTests.TestUtils;
-using Clinic.Domain.UnitTests.TestUtils.Services;
 using Clinic.Domain.UnitTests.TestUtils.TestConstants;
 using FluentAssertions;
 
@@ -115,14 +114,12 @@ public class DoctorTests
     [InlineData(DoctorType.Specialist, 9)] // Specialist doctor with 9 minutes duration
     [InlineData(DoctorType.General, 4)] // General doctor with 4 minutes duration
     [InlineData(DoctorType.Specialist, 31)] // Specialist doctor with 31 minutes duration
-    public async Task AddAppointment_WhenInvalidDurationForDoctor_ShouldReturnError(
+    public void AddAppointment_WhenInvalidDurationForDoctor_ShouldReturnError(
         DoctorType doctorType,
     uint appointmentDurationMinutes)
     {
         // Arrange
         var doctor = doctorType == DoctorType.General ? Constants.Doctor.GeneralDoctor : Constants.Doctor.SpecialistDoctor;
-        var unitOfWork = new UnitOfWork();
-        await unitOfWork.DoctorRepository.AddAsync(doctor);
 
 
         var appointmentResult = AppointmentFactory.CreateAppointment(Constants.Date.ValidAppointmentDateTime,
@@ -142,14 +139,12 @@ public class DoctorTests
     [InlineData(DayOfWeek.Tuesday, 18, 0)] // Invalid day and time (6:00 PM on Tuesday)
     [InlineData(DayOfWeek.Monday, 10, 59)] // Invalid day and time (10:59 PM on Monday)
     [InlineData(DayOfWeek.Monday, 15, 1)] // Invalid day and time (15:01 PM on Monday)
-    public async Task AppAppointment_WhenAddingOutOfScheduleForDoctor_ShouldReturnError(DayOfWeek? dayOfWeek,
+    public void AppAppointment_WhenAddingOutOfScheduleForDoctor_ShouldReturnError(DayOfWeek? dayOfWeek,
         int? hour,
         int? minute)
     {
         //Arrange
         var doctor = DoctorFactory.CreateDoctor();
-        var unitOfWork = new UnitOfWork();
-        await unitOfWork.DoctorRepository.AddAsync(doctor);
         var schedule = Constants.Schedule.ValidSchedule;
         doctor.AddSchedule(schedule);
 
